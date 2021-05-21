@@ -349,9 +349,9 @@ class OAuthClient
                 continue;
             }
 
-            // all requested scopes must be contained in the access token. The order is irrelevant.
+            // at least all requested scopes must be contained in the access token. The order is irrelevant.
             $accessTokenScopeList = array_map( 'strtolower', explode( " ", $accessToken->getScope() ) );
-            if( array_intersect($accessTokenList, $accessTokenScopeList) != $accessTokenList) {
+            if( array_intersect($scopeList, $accessTokenScopeList) != $scopeList) {
                 continue;
             }
 
