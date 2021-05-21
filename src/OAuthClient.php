@@ -45,10 +45,10 @@ class OAuthClient
     protected $dateTime;
 
     /** @var TokenStorageInterface */
-    private $tokenStorage;
+    protected $tokenStorage;
 
     /** @var Http\HttpClientInterface */
-    private $httpClient;
+    protected $httpClient;
 
     public function __construct(TokenStorageInterface $tokenStorage, HttpClientInterface $httpClient)
     {
@@ -216,7 +216,7 @@ class OAuthClient
      *
      * @return void
      */
-    private function doHandleCallback(Provider $provider, $userId, $responseCode, $responseState)
+    protected function doHandleCallback(Provider $provider, $userId, $responseCode, $responseState)
     {
         // get and delete the OAuth session information
         $sessionData = $this->session->take('_oauth2_session');
@@ -279,7 +279,7 @@ class OAuthClient
      *
      * @return false|AccessToken
      */
-    private function refreshAccessToken(Provider $provider, $userId, AccessToken $accessToken)
+    protected function refreshAccessToken(Provider $provider, $userId, AccessToken $accessToken)
     {
         // prepare access_token request
         $tokenRequestData = [
@@ -339,14 +339,19 @@ class OAuthClient
      *
      * @return false|AccessToken
      */
-    private function getAccessToken(Provider $provider, $userId, $scope)
+    protected function getAccessToken(Provider $provider, $userId, $scope)
     {
+        $scopeList = array_map( 'strtolower', explode( " ", $scope ) );
+
         $accessTokenList = $this->tokenStorage->getAccessTokenList($userId);
         foreach ($accessTokenList as $accessToken) {
             if ($provider->getProviderId() !== $accessToken->getProviderId()) {
                 continue;
             }
-            if ($scope !== $accessToken->getScope()) {
+
+            // all requested scopes must be contained in the access token. The order is irrelevant.
+            $accessTokenScopeList = array_map( 'strtolower', explode( " ", $accessToken->getScope() ) );
+            if( array_intersect($accessTokenList, $accessTokenScopeList) != $accessTokenList) {
                 continue;
             }
 
@@ -362,7 +367,7 @@ class OAuthClient
      *
      * @return array
      */
-    private static function getAuthorizationHeader($authUser, $authPass)
+    protected static function getAuthorizationHeader($authUser, $authPass)
     {
         return [
             'Accept' => 'application/json',
