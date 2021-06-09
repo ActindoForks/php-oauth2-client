@@ -144,20 +144,21 @@ class OAuthClient
      * @param string $scope       the space separated scope tokens
      * @param string $redirectUri the URL registered at the OAuth provider, to
      *                            be redirected back to
+     * @param string $state       optional value that is carried through the whole flow and added to the $redirectUri
      *
      * @return string the authorization request URL
      *
      * @see https://tools.ietf.org/html/rfc6749#section-3.3
      * @see https://tools.ietf.org/html/rfc6749#section-3.1.2
      */
-    public function getAuthorizeUri(Provider $provider, $userId, $scope, $redirectUri)
+    public function getAuthorizeUri(Provider $provider, $userId, $scope, $redirectUri, $state = null)
     {
         $codeVerifier = Base64UrlSafe::encodeUnpadded($this->random->raw());
         $queryParameters = [
             'client_id' => $provider->getClientId(),
             'redirect_uri' => $redirectUri,
             'scope' => $scope,
-            'state' => Base64UrlSafe::encodeUnpadded($this->random->raw()),
+            'state' => Base64UrlSafe::encodeUnpadded($state ? $state : $this->random->raw()),
             'response_type' => 'code',
             'code_challenge_method' => 'S256',
             'code_challenge' => Base64UrlSafe::encodeUnpadded(\hash('sha256', $codeVerifier, true)),
