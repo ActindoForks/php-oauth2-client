@@ -79,17 +79,26 @@ class Request
     }
 
     /**
-     * @param string $requestUri
+     * @param string               $requestUri
+     * @param array<string,string> $queryParameters
+     * @param array<string,string> $requestHeaders
      *
      * @return Request
      */
-    public static function get($requestUri, array $requestHeaders = [])
+    public static function get($requestUri, array $queryParameters = [], array $requestHeaders = [])
     {
+        if (0 !== \count($queryParameters)) {
+            $qP = \http_build_query($queryParameters, '', '&', PHP_QUERY_RFC3986);
+            $requestUri .= false === \strpos($requestUri, '?') ? '?'.$qP : '&'.$qP;
+        }
+
         return new self('GET', $requestUri, $requestHeaders);
     }
 
     /**
-     * @param string $requestUri
+     * @param string               $requestUri
+     * @param array<string,string> $postData
+     * @param array<string,string> $requestHeaders
      *
      * @return Request
      */
@@ -102,7 +111,7 @@ class Request
                 $requestHeaders,
                 ['Content-Type' => 'application/x-www-form-urlencoded']
             ),
-            \http_build_query($postData, '&')
+            \http_build_query($postData, '', '&')
         );
     }
 

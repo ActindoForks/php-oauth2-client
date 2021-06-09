@@ -105,15 +105,6 @@ class OAuthClient
 
         if ($accessToken->isExpired($this->dateTime)) {
             // access_token is expired, try to refresh it
-            if (null === $accessToken->getRefreshToken()) {
-                // we do not have a refresh_token, delete this access token, it
-                // is useless now...
-                $this->tokenStorage->deleteAccessToken($userId, $accessToken);
-
-                return false;
-            }
-
-            // try to refresh the AccessToken
             $accessToken = $this->refreshAccessToken($provider, $userId, $accessToken);
             if (false === $accessToken) {
                 // didn't work
@@ -168,7 +159,7 @@ class OAuthClient
             '%s%s%s',
             $provider->getAuthorizationEndpoint(),
             false === \strpos($provider->getAuthorizationEndpoint(), '?') ? '?' : '&',
-            \http_build_query($queryParameters, '&')
+            \http_build_query($queryParameters, '', '&')
         );
         $this->session->set(
             '_oauth2_session',
@@ -251,7 +242,7 @@ class OAuthClient
             Request::post(
                 $provider->getTokenEndpoint(),
                 $tokenRequestData,
-                self::getAuthorizationHeader(
+                self::getTokenRequestHeaders(
                     $provider->getClientId(),
                     $provider->getSecret()
                 )
@@ -282,18 +273,29 @@ class OAuthClient
      */
     protected function refreshAccessToken(Provider $provider, $userId, AccessToken $accessToken)
     {
+        if (null === $refreshToken = $accessToken->getRefreshToken()) {
+            // we do not have a refresh_token, delete this access token, it
+            // is useless now...
+            $this->tokenStorage->deleteAccessToken($userId, $accessToken);
+
+            return false;
+        }
+
         // prepare access_token request
         $tokenRequestData = [
             'grant_type' => 'refresh_token',
-            'refresh_token' => $accessToken->getRefreshToken(),
-            'scope' => $accessToken->getScope(),
+            'refresh_token' => $refreshToken,
         ];
+
+        if (null !== $scope = $accessToken->getScope()) {
+            $tokenRequestData['scope'] = $scope;
+        }
 
         $response = $this->httpClient->send(
             Request::post(
                 $provider->getTokenEndpoint(),
                 $tokenRequestData,
-                self::getAuthorizationHeader(
+                self::getTokenRequestHeaders(
                     $provider->getClientId(),
                     $provider->getSecret()
                 )
@@ -363,21 +365,26 @@ class OAuthClient
     }
 
     /**
-     * @param string $authUser
-     * @param string $authPass
+     * @param string      $authUser
+     * @param string|null $authPass
      *
      * @return array
      */
     protected static function getAuthorizationHeader($authUser, $authPass)
     {
-        return [
+        $requestHeaders = [
             'Accept' => 'application/json',
-            'Authorization' => \sprintf(
+        ];
+
+        if (null !== $authPass) {
+            $requestHeaders['Authorization'] = \sprintf(
                 'Basic %s',
                 Base64::encode(
                     \sprintf('%s:%s', $authUser, $authPass)
                 )
-            ),
-        ];
+            );
+        }
+
+        return $requestHeaders;
     }
 }
