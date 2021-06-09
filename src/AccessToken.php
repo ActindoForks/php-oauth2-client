@@ -34,7 +34,7 @@ class AccessToken
     /** @var string */
     private $providerId;
 
-    /** @var \DateTime */
+    /** @var string */
     private $issuedAt;
 
     /** @var string */
@@ -141,7 +141,7 @@ class AccessToken
      */
     public function getIssuedAt()
     {
-        return $this->issuedAt;
+        return new DateTime($this->issuedAt);
     }
 
     /**
@@ -205,7 +205,7 @@ class AccessToken
         }
 
         // check to see if issuedAt + expiresIn > provided DateTime
-        $expiresAt = clone $this->issuedAt;
+        $expiresAt = new DateTime($this->issuedAt);
         $expiresAt->add(new DateInterval(\sprintf('PT%dS', $expiresIn)));
 
         return $dateTime >= $expiresAt;
@@ -259,10 +259,11 @@ class AccessToken
         if (1 !== \preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/', $issuedAt)) {
             throw new AccessTokenException('invalid "expires_at" (syntax)');
         }
-
         // make sure it is actually a valid date
         try {
-            $this->issuedAt = new DateTime($issuedAt);
+            // saving as string instead of timestamp to workaround hhvm issue https://github.com/facebook/hhvm/issues/6882
+            new DateTime($issuedAt);
+            $this->issuedAt = $issuedAt;
         } catch (Exception $e) {
             throw new AccessTokenException(\sprintf('invalid "expires_at": %s', $e->getMessage()));
         }
