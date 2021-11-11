@@ -16,7 +16,6 @@ the OAuth 2.0 client of the League of Extraordinary Packages! It can be found
 * Only conforming OAuth 2.0 servers will work, this library will not get out of 
   its way to deal with services that violate the OAuth 2.0 RFC;
 * There will be no toggles to shoot yourself in the foot;
-* Uses `paragonie/constant_time_encoding` for constant time encoding;
 * Uses `paragonie/random_compat` polyfill for CSPRNG;
 * Uses `symfony/polyfill-php56` polyfill for `hash_equals`;
 * Uses `psr/log` to provide an interface to log HTTP requests between OAuth
