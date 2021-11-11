@@ -27,7 +27,6 @@
         "ext-pdo": "*",
         "ext-session": "*",
         "ext-spl": "*",
-        "paragonie/constant_time_encoding": "^1|^2",
         "paragonie/random_compat": ">=1",
         "php": ">=5.4",
         "psr/log": "^1.0",

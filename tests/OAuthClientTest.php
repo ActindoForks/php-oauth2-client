@@ -29,9 +29,9 @@ use fkooman\OAuth\Client\AccessToken;
 use fkooman\OAuth\Client\Exception\AccessTokenException;
 use fkooman\OAuth\Client\Exception\AuthorizeException;
 use fkooman\OAuth\Client\Exception\OAuthException;
+use fkooman\OAuth\Client\OAuthClient;
 use fkooman\OAuth\Client\PdoTokenStorage;
 use fkooman\OAuth\Client\Provider;
-use ParagonIE\ConstantTime\Base64UrlSafe;
 use PDO;
 use PHPUnit\Framework\TestCase;
 
@@ -136,7 +136,7 @@ class OAuthClientTest extends TestCase
                 'scope' => 'my_scope',
                 'state' => 'state12345abcde',
                 'response_type' => 'code',
-                'code_verifier' => Base64UrlSafe::encodeUnpadded('11111111111111111111111111111111'),
+                'code_verifier' => OAuthClient::base64UrlSafeEncodeUnpadded('11111111111111111111111111111111'),
             ]
         );
         $this->client->handleCallback(
@@ -165,7 +165,7 @@ class OAuthClientTest extends TestCase
                 'scope' => 'my_scope',
                 'state' => 'state12345abcde',
                 'response_type' => 'code',
-                'code_verifier' => Base64UrlSafe::encodeUnpadded('11111111111111111111111111111111'),
+                'code_verifier' => OAuthClient::base64UrlSafeEncodeUnpadded('11111111111111111111111111111111'),
             ]
         );
         $this->client->handleCallback(
@@ -223,7 +223,7 @@ class OAuthClientTest extends TestCase
                     'scope' => 'my_scope',
                     'state' => 'state12345abcde',
                     'response_type' => 'code',
-                    'code_verifier' => Base64UrlSafe::encodeUnpadded('11111111111111111111111111111111'),
+                    'code_verifier' => OAuthClient::base64UrlSafeEncodeUnpadded('11111111111111111111111111111111'),
                 ]
             );
             $this->client->handleCallback(

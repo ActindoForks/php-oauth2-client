@@ -30,8 +30,6 @@ use fkooman\OAuth\Client\Exception\OAuthException;
 use fkooman\OAuth\Client\Exception\TokenException;
 use fkooman\OAuth\Client\Http\HttpClientInterface;
 use fkooman\OAuth\Client\Http\Request;
-use ParagonIE\ConstantTime\Base64;
-use ParagonIE\ConstantTime\Base64UrlSafe;
 
 class OAuthClient
 {
@@ -155,15 +153,15 @@ class OAuthClient
      */
     public function getAuthorizeUri(Provider $provider, $userId, $scope, $redirectUri, $state = null)
     {
-        $codeVerifier = Base64UrlSafe::encodeUnpadded($this->random->raw());
+        $codeVerifier = self::base64UrlSafeEncodeUnpadded($this->random->raw());
         $queryParameters = [
             'client_id' => $provider->getClientId(),
             'redirect_uri' => $redirectUri,
             'scope' => $scope,
-            'state' => Base64UrlSafe::encodeUnpadded($state ? $state : $this->random->raw()),
+            'state' => self::base64UrlSafeEncodeUnpadded($state ? $state : $this->random->raw()),
             'response_type' => 'code',
             'code_challenge_method' => 'S256',
-            'code_challenge' => Base64UrlSafe::encodeUnpadded(\hash('sha256', $codeVerifier, true)),
+            'code_challenge' => self::base64UrlSafeEncodeUnpadded(\hash('sha256', $codeVerifier, true)),
         ];
 
         $authorizeUri = \sprintf(
@@ -185,6 +183,16 @@ class OAuthClient
         );
 
         return $authorizeUri;
+    }
+
+    /**
+     * Encode Base64 URLsafe (https://datatracker.ietf.org/doc/html/rfc4648#section-5)
+     * @param string $str
+     * @return string
+     */
+    final public static function base64UrlSafeEncodeUnpadded( $str )
+    {
+        return strtr( rtrim(base64_encode($str), '='), ['+'=>'-', '/'=>'_']);
     }
 
     /**
@@ -376,7 +384,7 @@ class OAuthClient
             'Accept' => 'application/json',
             'Authorization' => \sprintf(
                 'Basic %s',
-                Base64::encode(
+                base64_encode(
                     \sprintf('%s:%s', $authUser, $authPass)
                 )
             ),
